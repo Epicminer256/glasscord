@@ -1,15 +1,8 @@
 import nextcord
-import signal
 from datetime import datetime
-# sstate is a auto save that runs on another thread.
-# This provides a dictonary called db and it saves and loads it
 from sstate import *
 from nextcord.ext import commands, menus
 from RethinkAPI import rethink
-
-# handles quiting the bot and saves
-signal.signal(signal.SIGINT, save_and_exit)
-print("Press CTRL+C to stop server")
 
 rethink.url = db["Options"]["RethinkURL"]
 
@@ -21,7 +14,7 @@ class Register(nextcord.ui.Modal):
     def __init__(self):
         super().__init__(
             "Link Rethink to your account",
-            timeout=5 * 60,  # 5 minutes
+            timeout=5 * 60,
         )
 
         self.username = nextcord.ui.TextInput(
@@ -55,6 +48,7 @@ class Register(nextcord.ui.Modal):
             db["Users"][str(interaction.user.id)]["Username"] = self.username.value
             db["Users"][str(interaction.user.id)]["Password"] = self.password.value
             db["Users"][str(interaction.user.id)]["Auth"] = auth
+            saveState()
             response = f"{interaction.user.mention} has linked their Rethink account"
             await interaction.send(response)
 
@@ -88,10 +82,61 @@ async def logout(interaction: nextcord.Interaction):
         await interaction.response.send_message("Can't log out a user who isn't even logged in")
     else:
         await interaction.response.send_message("Removed your account!")
+        saveState()
 
 @rt.subcommand(name='list', description="Lists Rethink classes")
 async def _list(interaction: nextcord.Interaction):
     pass
+
+@rt.subcommand(description="Adds Rethink classes")
+async def add(interaction: nextcord.Interaction, arg: str):
+    try:
+        rethink.addClass(db["Users"][str(interaction.user.id)]["Auth"], arg)
+    except rethink.connectionFailed:
+         await interaction.response.send_message("Server side error occured")
+    except rethink.sessionAuthError:
+        try:
+            db["Users"][str(interaction.user.id)]["Auth"] = rethink.auth(db["Users"][str(interaction.user.id)]["Username"], db["Users"][str(interaction.user.id)]["Password"])
+        except rethink.loginIncorrectErr:
+            await interaction.response.send_message("Password seemed to have changed, try re-registering")
+        except rethink.connectionFailed:
+            await interaction.response.send_message("Server side error occured")
+        else:
+            try:
+                rethink.addClass(db["Users"][str(interaction.user.id)]["Auth"], arg)
+            except:
+                await interaction.response.send_message("Server side error occured")
+            else:
+                saveState()
+    except KeyError:
+        await interaction.response.send_message("You don't seem to be logged in")
+    else:
+        await interaction.response.send_message("Added class! Check your class list to see if it added")
+
+@rt.subcommand(description="Adds Rethink classes")
+async def remove(interaction: nextcord.Interaction, arg: str):
+    try:
+        rethink.removeClass(db["Users"][str(interaction.user.id)]["Auth"], arg)
+    except rethink.connectionFailed:
+         await interaction.response.send_message("Server side error occured")
+    except rethink.sessionAuthError:
+        try:
+            db["Users"][str(interaction.user.id)]["Auth"] = rethink.auth(db["Users"][str(interaction.user.id)]["Username"], db["Users"][str(interaction.user.id)]["Password"])
+        except rethink.loginIncorrectErr:
+            await interaction.response.send_message("Password seemed to have changed, try re-registering")
+        except rethink.connectionFailed:
+            await interaction.response.send_message("Server side error occured")
+        else:
+            try:
+                rethink.removeClass(db["Users"][str(interaction.user.id)]["Auth"], arg)
+            except:
+                await interaction.response.send_message("Server side error occured")
+            else:
+                saveState()
+    except KeyError:
+        await interaction.response.send_message("You don't seem to be logged in")
+    else:
+        await interaction.response.send_message("Removed class! Check your class list to see if it removed")
 
 @_list.subcommand(description="Shows enrolled classes")
 async def local(interaction: nextcord.Interaction):
@@ -111,7 +156,10 @@ async def local(interaction: nextcord.Interaction):
                 classes = rethink.getEnrolledClasses(db["Users"][str(interaction.user.id)]["Auth"])
             except:
                 await interaction.response.send_message("Server side error occured")
-                raise("f")
+            else:
+                saveState()
+    except KeyError:
+        await interaction.response.send_message("You don't seem to be logged in")
     else:
         if len(classes) == 0:
             await interaction.response.send_message("No classes this week")
@@ -158,7 +206,10 @@ async def pub(interaction: nextcord.Interaction):
                 classes = rethink.getAllClasses(db["Users"][str(interaction.user.id)]["Auth"])
             except:
                 await interaction.response.send_message("Server side error occured")
-                raise("f")
+            else:
+                saveState()
+    except KeyError:
+        await interaction.response.send_message("You don't seem to be logged in")
     else:
         if len(classes) == 0:
             await interaction.response.send_message("No classes this week")
@@ -189,5 +240,5 @@ async def pub(interaction: nextcord.Interaction):
                 temp = temp + peice + "\n"
             if temp != "":
                 await thread.send(temp)
-
 bot.run(db["Options"]["BotToken"])
+save_and_exit()

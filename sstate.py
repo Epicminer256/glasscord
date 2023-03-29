@@ -1,6 +1,7 @@
 import os, json
 from time import sleep
 from threading import Thread
+
 shutdownsignal = False
 
 if os.path.isfile("data.db"):
@@ -27,7 +28,7 @@ else:
 def saveState():
     json.dump(db, open("data.db", "w"), indent=4)
 
-def saveLoop():
+def saveLoopFunc():
     global shutdownsignal
     time=0
     while not shutdownsignal:
@@ -38,8 +39,9 @@ def saveLoop():
             sleep(1)
     asyncio.run(client.close())
         
-save_daemon = Thread(target=saveLoop, daemon=True, name='SaveLoop')
-save_daemon.start()
+def saveLoop():
+    save_daemon = Thread(target=saveLoopFunc, daemon=True, name='SaveLoop')
+    save_daemon.start()
 
 def save_and_exit(*args):
     print("Sent shutdown signal")
