@@ -9,6 +9,7 @@ rethink.url = db["Options"]["RethinkURL"]
 intents = nextcord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix="/", intents=intents)
+autodeleteAfter=120
 
 class CurrentClasses(nextcord.ui.Select):
     def __init__(self, classes):
@@ -172,17 +173,17 @@ async def add(interaction: nextcord.Interaction):
         await interaction.response.send_message("You don't seem to be logged in", ephemeral=True)
     else:
         if len(classes) == 0:
-            await interaction.response.send_message("No classes this week")
+            await interaction.response.send_message("No classes this week", ephemeral=True)
         else:
-            await interaction.response.send_message("Generating... (Frick you discord for limiting dropdowns)")
+            await interaction.response.send_message("Generating... (Frick you discord for limiting dropdowns)", delete_after=5)
             def divide_chunks(_list, chuncksize):
                 for i in range(0, len(_list), chuncksize):
                     yield _list[i:i + chuncksize]
             pagelist = divide_chunks(classes, 24)
             for num, clist in enumerate(pagelist):
                 view = AddClassesView(clist)
-                await interaction.channel.send(view=view)
-            await interaction.channel.send('Done!')
+                await interaction.channel.send(view=view, delete_after=autodeleteAfter)
+            await interaction.channel.send('Done!', delete_after=5)
             
 
 @rt.subcommand(description="Adds Rethink classes")
