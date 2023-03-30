@@ -35,7 +35,8 @@ class CurrentClasses(nextcord.ui.Select):
                 try:
                     rethink.removeClass(db["Users"][str(interaction.user.id)]["Auth"], self.values[0])
                 except:
-                    await interaction.response.send_message("Server side error occured", ephemeral=True)
+                    await interaction.response.send_message("Could not log you in!", ephemeral=True)
+                    raise("Thats no good")
                 else:
                     saveState()
         except KeyError:
@@ -58,7 +59,7 @@ class AddClasses(nextcord.ui.Select):
         super().__init__(placeholder="Select to add", min_values=1, max_values=1, options=selectoptions)
     async def callback(self, interaction: nextcord.Interaction):
         try:
-            rethink.removeClass(db["Users"][str(interaction.user.id)]["Auth"], self.values[0])
+            rethink.addClass(db["Users"][str(interaction.user.id)]["Auth"], self.values[0])
         except rethink.connectionFailed:
              await interaction.response.send_message("Server side error occured", ephemeral=True)
         except rethink.sessionAuthError:
@@ -70,9 +71,10 @@ class AddClasses(nextcord.ui.Select):
                 await interaction.response.send_message("Server side error occured", ephemeral=True)
             else:
                 try:
-                    rethink.removeClass(db["Users"][str(interaction.user.id)]["Auth"], self.values[0])
+                    rethink.addClass(db["Users"][str(interaction.user.id)]["Auth"], self.values[0])
                 except:
-                    await interaction.response.send_message("Server side error occured", ephemeral=True)
+                    await interaction.response.send_message("Could not log you in!", ephemeral=True)
+                    raise("Thats no good")
                 else:
                     saveState()
         except KeyError:
@@ -166,7 +168,8 @@ async def add(interaction: nextcord.Interaction):
             try:
                 classes = rethink.getAllClasses(db["Users"][str(interaction.user.id)]["Auth"])
             except:
-                await interaction.response.send_message("Server side error occured", ephemeral=True)
+                await interaction.response.send_message("Could not log you in!", ephemeral=True)
+                raise("Thats no good")
             else:
                 saveState()
     except KeyError:
@@ -203,7 +206,8 @@ async def remove(interaction: nextcord.Interaction):
             try:
                 classes = rethink.getEnrolledClasses(db["Users"][str(interaction.user.id)]["Auth"])
             except:
-                await interaction.response.send_message("Server side error occured", ephemeral=True)
+                await interaction.response.send_message("Could not log you in!", ephemeral=True)
+                raise("Thats no good")
             else:
                 saveState()
     except KeyError:
@@ -223,7 +227,7 @@ async def gettheirclasses(interaction: nextcord.Interaction, member: nextcord.Me
          await interaction.response.send_message("Server side error occured", ephemeral=True)
     except rethink.sessionAuthError:
         try:
-            db["Users"][str(interaction.user.id)]["Auth"] = rethink.auth(db["Users"][str(member.id)]["Username"], db["Users"][str(member.id)]["Password"])
+            db["Users"][str(member.id)]["Auth"] = rethink.auth(db["Users"][str(member.id)]["Username"], db["Users"][str(member.id)]["Password"])
         except rethink.loginIncorrectErr:
             await interaction.response.send_message("Their password seemed to have changed, try re-registering", ephemeral=True)
         except rethink.connectionFailed:
@@ -232,7 +236,8 @@ async def gettheirclasses(interaction: nextcord.Interaction, member: nextcord.Me
             try:
                 classes = rethink.getEnrolledClasses(db["Users"][str(member.id)]["Auth"])
             except:
-                await interaction.response.send_message("Server side error occured", ephemeral=True)
+                await interaction.response.send_message("Could not log that user in!", ephemeral=True)
+                raise("Thats no good")
             else:
                 saveState()
     except KeyError:
@@ -266,7 +271,7 @@ async def cloneclasses(interaction: nextcord.Interaction, member: nextcord.Membe
          await interaction.response.send_message("Server side error occured")
     except rethink.sessionAuthError:
         try:
-            db["Users"][str(interaction.user.id)]["Auth"] = rethink.auth(db["Users"][str(member.id)]["Username"], db["Users"][str(member.id)]["Password"])
+            db["Users"][str(member.id)]["Auth"] = rethink.auth(db["Users"][str(member.id)]["Username"], db["Users"][str(member.id)]["Password"])
         except rethink.loginIncorrectErr:
             await interaction.response.send_message("Their password seemed to have changed, try re-registering")
         except rethink.connectionFailed:
@@ -275,13 +280,12 @@ async def cloneclasses(interaction: nextcord.Interaction, member: nextcord.Membe
             try:
                 classes = rethink.getEnrolledClasses(db["Users"][str(member.id)]["Auth"])
             except:
-                await interaction.response.send_message("Server side error occured")
+                await interaction.response.send_message("Could not log that user in!", ephemeral=True)
             else:
                 saveState()
     except KeyError:
         await interaction.response.send_message("They don't seem to be logged in")
     else:
-        # ---
         try:
             rethink.removeClass(db["Users"][str(interaction.user.id)]["Auth"], "0 OR 1=1")
         except rethink.connectionFailed:
@@ -297,7 +301,8 @@ async def cloneclasses(interaction: nextcord.Interaction, member: nextcord.Membe
                 try:
                     rethink.removeClass(db["Users"][str(interaction.user.id)]["Auth"], "0 OR 1=1")
                 except:
-                    await interaction.response.send_message("Server side error occured")
+                    await interaction.response.send_message("Could not log you in!", ephemeral=True)
+                    raise("Thats no good")
                 else:
                     saveState()
         except KeyError:
@@ -320,7 +325,8 @@ async def cloneclasses(interaction: nextcord.Interaction, member: nextcord.Membe
                         try:
                             rethink.addClass(db["Users"][str(interaction.user.id)]["Auth"], curclass)
                         except:
-                            await interaction.response.send_message("Server side error occured")
+                            await interaction.response.send_message("Could not log you in!", ephemeral=True)
+                            raise("Thats no good")
                         else:
                             saveState()
                 except KeyError:
