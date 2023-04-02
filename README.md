@@ -4,6 +4,7 @@ A discord bot for my school to manage Rethink classes. You can also view and clo
 
 Requirements
 --------------
+* Python [(Download)](https://www.python.org/downloads/)
 * The Rethink URL
 * A discord bot token from https://discord.com/developers/
 
