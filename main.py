@@ -189,7 +189,7 @@ async def add(interaction: nextcord.Interaction):
             await interaction.channel.send('Done!', delete_after=5)
             
 
-@rt.subcommand(description="Adds Rethink classes")
+@rt.subcommand(description="Removes Rethink classes")
 async def remove(interaction: nextcord.Interaction):
     try:
         classes = rethink.getEnrolledClasses(db["Users"][str(interaction.user.id)]["Auth"])
