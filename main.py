@@ -15,11 +15,19 @@ class CurrentClasses(nextcord.ui.Select):
     def __init__(self, classes):
         selectoptions = []
         for c in classes:
-            selectoptions.append(
-                nextcord.SelectOption(label=c["classname"], value=c["classid"], description="["+datetime.strptime(c["date"], '%Y-%m-%d').strftime("%A")+" in "+c["room"]+"] "+c["firstname"]+" "+c["lastname"]+"'s class has "+c["openseats"]+" seats left")
-            )
+            if c["classid"] == "0":
+                selectoptions.append(
+                    nextcord.SelectOption(label="[LOCKED] "+c["classname"], value=c["classid"], description="["+datetime.strptime(c["date"], '%Y-%m-%d').strftime("%A")+" in "+c["room"]+"] "+c["firstname"]+" "+c["lastname"]+"'s class has "+c["openseats"]+" seats left")
+                )
+            else:
+                selectoptions.append(
+                    nextcord.SelectOption(label=c["classname"], value=c["classid"], description="["+datetime.strptime(c["date"], '%Y-%m-%d').strftime("%A")+" in "+c["room"]+"] "+c["firstname"]+" "+c["lastname"]+"'s class has "+c["openseats"]+" seats left")
+                )
         super().__init__(placeholder="Select to remove", min_values=1, max_values=1, options=selectoptions)
     async def callback(self, interaction: nextcord.Interaction):
+        if self.values[0] == "0":
+            await interaction.response.send_message("Cannot remove a locked class", ephemeral=True)
+            return
         try:
             rethink.removeClass(db["Users"][str(interaction.user.id)]["Auth"], self.values[0])
         except rethink.connectionFailed:
@@ -53,11 +61,19 @@ class AddClasses(nextcord.ui.Select):
     def __init__(self, classes):
         selectoptions = []
         for c in classes:
-            selectoptions.append(
-                nextcord.SelectOption(label=c["classname"], value=c["classid"], description="["+datetime.strptime(c["date"], '%Y-%m-%d').strftime("%A")+" in "+c["room"]+"] "+c["firstname"]+" "+c["lastname"]+"'s class has "+c["openseats"]+" seats left")
-            )
+            if c["classid"] == "0":
+                selectoptions.append(
+                    nextcord.SelectOption(label="[LOCKED] "+c["classname"], value=c["classid"], description="["+datetime.strptime(c["date"], '%Y-%m-%d').strftime("%A")+" in "+c["room"]+"] "+c["firstname"]+" "+c["lastname"]+"'s class has "+c["openseats"]+" seats left")
+                )
+            else:
+                selectoptions.append(
+                    nextcord.SelectOption(label=c["classname"], value=c["classid"], description="["+datetime.strptime(c["date"], '%Y-%m-%d').strftime("%A")+" in "+c["room"]+"] "+c["firstname"]+" "+c["lastname"]+"'s class has "+c["openseats"]+" seats left")
+                )
         super().__init__(placeholder="Select to add", min_values=1, max_values=1, options=selectoptions)
     async def callback(self, interaction: nextcord.Interaction):
+        if self.values[0] == "0":
+            await interaction.response.send_message("Cannot add a locked class", ephemeral=True)
+            return
         try:
             rethink.addClass(db["Users"][str(interaction.user.id)]["Auth"], self.values[0])
         except rethink.connectionFailed:
