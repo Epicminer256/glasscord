@@ -157,24 +157,19 @@ def getEnrolledClasses(auth):
     classlist = []
     for a in classElementList:
         try:
+            try:
+                curclassid = str(a["td"][0]["img"][0]['_attributes']['onclick'].replace("removeStudentFromSession('", "").replace("')", ""))
+            except KeyError:
+                curclassid = "0"
             classlist.append({
-                "type":
-                str(a["td"][2]["_value"]),
-                "classname":
-                str(a["td"][3]["_value"]),
-                "date":
-                str(a["td"][4]["_value"]),
-                "room":
-                str(a["td"][5]["_value"]),
-                "openseats":
-                str(a["td"][6]["_value"]),
-                "firstname":
-                str(a["td"][7]["_value"]),
-                "lastname":
-                str(a["td"][8]["_value"]),
-                "classid":
-                str(a["td"][0]["img"][0]['_attributes']['onclick'].replace(
-                    "removeStudentFromSession('", "").replace("')", "")),
+                "type": str(a["td"][2]["_value"]),
+                "classname": str(a["td"][3]["_value"]),
+                "date":str(a["td"][4]["_value"]),
+                "room":str(a["td"][5]["_value"]),
+                "openseats":str(a["td"][6]["_value"]),
+                "firstname":str(a["td"][7]["_value"]),
+                "lastname":str(a["td"][8]["_value"]),
+                "classid": curclassid,
             })
         except IndexError:
             pass
@@ -207,24 +202,19 @@ def getAllClasses(auth):
     classlist = []
     for a in classElementList:
         if not 'colspan' in a["td"][0]['_attributes']:
+            try:
+                curclassid = str(a["td"][0]["img"][0]['_attributes']['onclick'].replace("addStudentToSession('", "").split("'")[0])
+            except KeyError:
+                curclassid = "0"
             classlist.append({
-                "type":
-                str(a["td"][2]["_value"]),
-                "classname":
-                str(a["td"][3]["_value"]),
-                "date":
-                str(a["td"][4]["_value"]),
-                "openseats":
-                str(a["td"][5]["_value"]),
-                "room":
-                str(a["td"][1]["img"][0]['_attributes']["classroom"]),
-                "firstname":
-                str(a["td"][6]["_value"]),
-                "lastname":
-                str(a["td"][7]["_value"]),
-                "classid":
-                str(a["td"][0]["img"][0]['_attributes']['onclick'].replace(
-                    "addStudentToSession('", "").split("'")[0]),
+                "type":str(a["td"][2]["_value"]),
+                "classname":str(a["td"][3]["_value"]),
+                "date":str(a["td"][4]["_value"]),
+                "openseats":str(a["td"][5]["_value"]),
+                "room":str(a["td"][1]["img"][0]['_attributes']["classroom"]),
+                "firstname":str(a["td"][6]["_value"]),
+                "lastname":str(a["td"][7]["_value"]),
+                "classid": curclassid
             })
 
     return classlist
